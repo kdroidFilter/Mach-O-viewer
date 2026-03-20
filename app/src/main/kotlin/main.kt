@@ -12,6 +12,7 @@ import java.awt.Desktop
 import java.awt.Dimension
 
 fun main(args: Array<String>) {
+    args.firstOrNull()?.let { FileInbox.send(it) }
     if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.APP_OPEN_FILE)) {
         Desktop.getDesktop().setOpenFileHandler { event ->
             event.files.firstOrNull()?.let { file ->

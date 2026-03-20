@@ -6,12 +6,15 @@ import java.awt.Dimension
 import com.github.terrakok.App
 
 fun main() = application {
+    val windowState = rememberWindowState(width = 1000.dp, height = 800.dp)
+
     Window(
         title = "Mach-O viewer",
-        state = rememberWindowState(width = 800.dp, height = 600.dp),
+        state = windowState,
         onCloseRequest = ::exitApplication,
     ) {
         window.minimumSize = Dimension(350, 600)
+
         App()
     }
 }

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.*
@@ -27,6 +28,8 @@ fun MachOView(machOFile: MachOFile) {
     var selectedBinary by remember { mutableStateOf(machOFile.binaries.first()) }
     var selectedItem by remember(selectedBinary) { mutableStateOf<Any>(selectedBinary.header) }
     var showBinaryPopup by remember { mutableStateOf(false) }
+    var highlightedOffset by remember(selectedItem) { mutableStateOf<Long?>(null) }
+    var highlightedSize by remember { mutableStateOf(0) }
 
     DropdownMenu(
         expanded = showBinaryPopup,
@@ -74,21 +77,34 @@ fun MachOView(machOFile: MachOFile) {
             Box(modifier = Modifier.weight(1f)) {
                 Column(modifier = Modifier.fillMaxSize()) {
                     TableHeader()
-                    TableContent(selectedItem, machOFile.content)
+                    TableContent(selectedItem, machOFile.content) { (offset, size) ->
+                        highlightedOffset = offset
+                        highlightedSize = size
+                    }
                 }
             }
 
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
             Box(modifier = Modifier.weight(1f)) {
-                HexViewer(machOFile.content)
+                HexViewer(machOFile.content, highlightedOffset, highlightedSize)
             }
         }
     }
 }
 
 @Composable
-fun HexViewer(content: ByteArray) {
+fun HexViewer(content: ByteArray, highlightedOffset: Long? = null, highlightedSize: Int = 0) {
+    val scrollState = rememberLazyListState()
+    val bytesPerLine = 16
+
+    LaunchedEffect(highlightedOffset) {
+        highlightedOffset?.let {
+            val lineIndex = (it / bytesPerLine).toInt()
+            scrollState.animateScrollToItem(lineIndex)
+        }
+    }
+
     Column(modifier = Modifier.fillMaxSize()) {
         Text(
             text = "File Hex Viewer",
@@ -96,59 +112,99 @@ fun HexViewer(content: ByteArray) {
             modifier = Modifier.padding(8.dp)
         )
         HorizontalDivider()
-        SelectionContainer {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.surface)
-            ) {
-                val bytesPerLine = 16
-                val lineCount = (content.size + bytesPerLine - 1) / bytesPerLine
-                items(lineCount) { lineIndex ->
-                    val start = lineIndex * bytesPerLine
-                    val end = (start + bytesPerLine).coerceAtMost(content.size)
+        LazyColumn(
+            state = scrollState,
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.surface)
+        ) {
+            val lineCount = (content.size + bytesPerLine - 1) / bytesPerLine
+            items(lineCount) { lineIndex ->
+                val start = lineIndex * bytesPerLine
+                val end = (start + bytesPerLine).coerceAtMost(content.size)
 
-                    Row(modifier = Modifier.padding(horizontal = 8.dp)) {
-                        // Address
-                        Text(
-                            text = "%08X".format(start),
-                            fontFamily = FontFamily.Monospace,
-                            fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.secondary,
-                            modifier = Modifier.width(80.dp)
-                        )
+                Row(modifier = Modifier.padding(horizontal = 8.dp)) {
+                    // Address
+                    Text(
+                        text = "%08X".format(start),
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.width(80.dp)
+                    )
 
-                        Spacer(modifier = Modifier.width(24.dp))
+                    Spacer(modifier = Modifier.width(24.dp))
 
-                        // Hex (Raw data)
-                        val hexStringBuilder = StringBuilder()
-                        for (i in start until end) {
-                            hexStringBuilder.append("%02X ".format(content[i].toInt() and 0xFF))
-                        }
-                        Text(
-                            text = hexStringBuilder.toString().padEnd(bytesPerLine * 3),
-                            fontFamily = FontFamily.Monospace,
-                            fontSize = 12.sp,
-                            modifier = Modifier.width(380.dp)
-                        )
-                        Spacer(modifier = Modifier.weight(1f))
-
-                        // ASCII (Hex viewer representation)
-                        val asciiStringBuilder = StringBuilder()
-                        for (i in start until end) {
-                            val c = content[i].toInt() and 0xFF
-                            if (c in 32..126) {
-                                asciiStringBuilder.append(c.toChar())
+                    // Hex (Raw data)
+                    Row(modifier = Modifier.width(380.dp)) {
+                        for (i in start until start + bytesPerLine) {
+                            val isHighlighted = highlightedOffset != null &&
+                                    i >= highlightedOffset && i < highlightedOffset + highlightedSize
+                            val color = if (isHighlighted) {
+                                MaterialTheme.colorScheme.onPrimaryContainer
                             } else {
-                                asciiStringBuilder.append(".")
+                                MaterialTheme.colorScheme.onSurface
+                            }
+                            val background = if (isHighlighted) {
+                                MaterialTheme.colorScheme.primaryContainer
+                            } else {
+                                Color.Transparent
+                            }
+
+                            if (i < end) {
+                                Text(
+                                    text = "%02X ".format(content[i].toInt() and 0xFF),
+                                    fontFamily = FontFamily.Monospace,
+                                    fontSize = 12.sp,
+                                    color = color,
+                                    modifier = Modifier.background(background)
+                                )
+                            } else {
+                                Text(
+                                    text = "   ",
+                                    fontFamily = FontFamily.Monospace,
+                                    fontSize = 12.sp,
+                                )
                             }
                         }
-                        Text(
-                            text = asciiStringBuilder.toString(),
-                            fontFamily = FontFamily.Monospace,
-                            fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.primary
-                        )
+                    }
+
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    // ASCII (Hex viewer representation)
+                    Row {
+                        for (i in start until start + bytesPerLine) {
+                            val isHighlighted = highlightedOffset != null &&
+                                    i >= highlightedOffset && i < highlightedOffset + highlightedSize
+                            val color = if (isHighlighted) {
+                                MaterialTheme.colorScheme.onPrimaryContainer
+                            } else {
+                                MaterialTheme.colorScheme.primary
+                            }
+                            val background = if (isHighlighted) {
+                                MaterialTheme.colorScheme.primaryContainer
+                            } else {
+                                Color.Transparent
+                            }
+
+                            if (i < end) {
+                                val c = content[i].toInt() and 0xFF
+                                val char = if (c in 32..126) c.toChar().toString() else "."
+                                Text(
+                                    text = char,
+                                    fontFamily = FontFamily.Monospace,
+                                    fontSize = 12.sp,
+                                    color = color,
+                                    modifier = Modifier.background(background)
+                                )
+                            } else {
+                                Text(
+                                    text = " ",
+                                    fontFamily = FontFamily.Monospace,
+                                    fontSize = 12.sp,
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -296,31 +352,34 @@ fun TableHeader() {
             .padding(vertical = 4.dp)
     ) {
         TableCell("Address", Modifier.width(100.dp), fontWeight = FontWeight.Bold)
-        TableCell("Data", Modifier.width(150.dp), fontWeight = FontWeight.Bold)
+        TableCell("Data", Modifier.width(200.dp), fontWeight = FontWeight.Bold)
         TableCell("Description", Modifier.width(250.dp), fontWeight = FontWeight.Bold)
         TableCell("Value", Modifier.weight(1f), fontWeight = FontWeight.Bold)
     }
 }
 
 @Composable
-fun TableContent(selectedItem: Any?, content: ByteArray) {
+fun TableContent(
+    selectedItem: Any?,
+    content: ByteArray,
+    onAddressClick: (DataDestination) -> Unit
+) {
     val data = getTableData(selectedItem, content)
-    SelectionContainer {
-        LazyColumn {
-            itemsIndexed(data) { index, row ->
-                val backgroundColor =
-                    if (index % 2 == 0) Color.Transparent else MaterialTheme.colorScheme.surfaceContainerLow
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(backgroundColor)
-                        .padding(vertical = 2.dp),
-                ) {
-                    TableCell(row.address, Modifier.width(100.dp))
-                    TableCell(row.data, Modifier.width(150.dp))
-                    TableCell(row.description, Modifier.width(250.dp))
-                    TableCell(row.value, Modifier.weight(1f))
-                }
+    LazyColumn {
+        itemsIndexed(data) { index, row ->
+            val backgroundColor =
+                if (index % 2 == 0) Color.Transparent else MaterialTheme.colorScheme.surfaceContainerLow
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(backgroundColor)
+                    .clickable { if (row.destination != null) { onAddressClick(row.destination) } }
+                    .padding(vertical = 2.dp),
+            ) {
+                TableCell(row.address, Modifier.width(100.dp))
+                TableCell(row.data, Modifier.width(200.dp))
+                TableCell(row.description, Modifier.width(250.dp))
+                TableCell(row.value, Modifier.weight(1f))
             }
         }
     }
@@ -330,12 +389,13 @@ fun TableContent(selectedItem: Any?, content: ByteArray) {
 fun RowScope.TableCell(
     text: String,
     modifier: Modifier,
-    fontWeight: FontWeight = FontWeight.Normal
+    fontWeight: FontWeight = FontWeight.Normal,
+    color: Color = MaterialTheme.colorScheme.onSurface
 ) {
     Text(
         text = text,
         modifier = modifier.padding(horizontal = 8.dp),
-        color = MaterialTheme.colorScheme.onSurface,
+        color = color,
         style = MaterialTheme.typography.bodySmall.copy(
             fontFamily = FontFamily.Monospace,
             fontSize = 12.sp,
@@ -350,7 +410,13 @@ data class RowData(
     val description: String,
     val value: String,
     val address: String = "",
-    val data: String = ""
+    val data: String = "",
+    val destination: DataDestination? = null
+)
+
+data class DataDestination(
+    val offset: Long,
+    val size: Int
 )
 
 fun getTableData(item: Any?, content: ByteArray): List<RowData> {

@@ -125,6 +125,3 @@ fun FileDropScreen(onFileDropped: (String) -> Unit) {
         }
     }
 }
-
-expect fun pickFile(onFileSelected: (String?) -> Unit)
-expect fun DragAndDropEvent.getFiles(): List<String>

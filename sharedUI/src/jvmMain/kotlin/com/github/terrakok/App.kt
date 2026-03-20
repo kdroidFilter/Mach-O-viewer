@@ -12,9 +12,7 @@ import androidx.compose.ui.unit.dp
 import com.github.terrakok.theme.AppTheme
 
 @Composable
-fun App(
-    onThemeChanged: @Composable (isDark: Boolean) -> Unit = {},
-) = AppTheme(onThemeChanged) {
+fun App() = AppTheme {
     var fileName: String? by remember { mutableStateOf(null) }
 
     Box(

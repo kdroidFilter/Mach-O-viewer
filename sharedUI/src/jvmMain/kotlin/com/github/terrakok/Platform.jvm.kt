@@ -6,7 +6,7 @@ import java.awt.Frame
 import java.awt.datatransfer.DataFlavor
 import java.io.File
 
-actual fun pickFile(onFileSelected: (String?) -> Unit) {
+fun pickFile(onFileSelected: (String?) -> Unit) {
     val fileDialog = FileDialog(null as Frame?, "Select a file", FileDialog.LOAD)
     fileDialog.isVisible = true
     if (fileDialog.file != null) {
@@ -17,7 +17,7 @@ actual fun pickFile(onFileSelected: (String?) -> Unit) {
 }
 
 @Suppress("UNCHECKED_CAST")
-actual fun DragAndDropEvent.getFiles(): List<String> {
+fun DragAndDropEvent.getFiles(): List<String> {
     try {
         val transferable = getTransferable(this)
         if (transferable != null && transferable.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {

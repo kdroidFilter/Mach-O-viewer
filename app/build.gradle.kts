@@ -95,7 +95,7 @@ nucleus.application {
             publishMode = PublishMode.Auto
             github {
                 enabled = true
-                owner = "terrakok"
+                owner = "kdroidFilter"
                 repo = "Mach-O-viewer"
                 token = System.getenv("GITHUB_TOKEN")
                 channel = ReleaseChannel.Latest

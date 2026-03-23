@@ -35,7 +35,7 @@ import java.awt.Dimension
 import java.io.File
 
 private val updater = NucleusUpdater {
-    provider = GitHubProvider(owner = "terrakok", repo = "Mach-O-viewer")
+    provider = GitHubProvider(owner = "kdroidFilter", repo = "Mach-O-viewer")
     httpClient = NativeHttpClient.create()
 }
 

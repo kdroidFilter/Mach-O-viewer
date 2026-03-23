@@ -4,6 +4,8 @@
 -dontwarn org.jetbrains.jewel.ui.component.IconKt
 -dontwarn com.sun.jna.**
 -dontwarn org.jetbrains.jewel.window.utils.macos.MacUtil
+-dontnote com.sun.jna.**
+-dontnote org.jetbrains.jewel.window.utils.macos.MacUtil
 
 # Keep JNA classes
 -keep class com.sun.jna.** { *; }
@@ -17,6 +19,7 @@
 -dontwarn com.intellij.openapi.diagnostic.Logger
 -dontwarn org.slf4j.LoggerFactory
 -dontwarn org.slf4j.Logger
+-dontnote org.jetbrains.jewel.foundation.util.JewelLogger**
 
 # Keep AWT methods accessed via reflection in JNA Platform WindowUtils
 -keepclassmembers class java.awt.Component {

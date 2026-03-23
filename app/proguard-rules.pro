@@ -13,6 +13,9 @@
 -keep class org.jetbrains.jewel.** { *; }
 -keep class com.jetbrains.** { *; }
 
+# Keep Nucleus classes
+-keep class io.github.kdroidfilter.nucleus.** { *; }
+
 # Keep fields used by reflection in PlatformUtils.kt
 -keepclassmembers class androidx.compose.ui.draganddrop.DragAndDropEvent {
     *;

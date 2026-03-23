@@ -12,6 +12,7 @@ pluginManagement {
         }
         gradlePluginPortal()
         mavenCentral()
+        mavenLocal()
     }
 }
 
@@ -27,6 +28,8 @@ dependencyResolutionManagement {
             }
         }
         mavenCentral()
+        mavenLocal()
+        maven("https://www.jetbrains.com/intellij-repository/snapshots")
     }
 }
 include(":app")

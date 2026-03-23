@@ -1,9 +1,16 @@
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import io.github.kdroidfilter.nucleus.desktop.application.dsl.CompressionLevel
+import io.github.kdroidfilter.nucleus.desktop.application.dsl.TargetFormat
 
 plugins {
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.compose.multiplatform)
+    alias(libs.plugins.nucleus)
     alias(libs.plugins.kotlin.jvm)
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
 }
 
 kotlin {
@@ -18,47 +25,66 @@ dependencies {
     implementation(libs.compose.foundation)
     implementation(libs.kotlinx.coroutines.swing)
     implementation(libs.jewelStandalone)
-    implementation(libs.jewelWindow)
+    implementation(libs.nucleus.decorated.window.jewel)
+    implementation(libs.nucleus.decorated.window.jni)
+    implementation(libs.jna)
+    implementation(libs.nucleus.darkmode.detector)
+    implementation(libs.nucleus.graalvm.runtime)
     implementation(compose.desktop.currentOs) {
         exclude(group = "org.jetbrains.compose.material")
     }
 }
 
-compose.desktop {
-    application {
-        mainClass = "MainKt"
+nucleus.application {
+    mainClass = "MainKt"
 
-        nativeDistributions {
-            targetFormats(TargetFormat.Dmg)
-            packageName = "Mach-O viewer"
-            packageVersion = project.findProperty("appVersion")?.toString() ?: "1.0.0"
+    graalvm {
+        isEnabled = true
+        imageName = "mach-o-viewer"
+        javaLanguageVersion = 25
+        jvmVendor = JvmVendorSpec.BELLSOFT
+        nativeImageConfigBaseDir.set(project.file("src/graalvm"))
+        buildArgs.addAll(
+            "-H:+AddAllCharsets",
+            "-Djava.awt.headless=false",
+            "-Os",
+        )
 
-            buildTypes.release.proguard {
-                configurationFiles.from(project.file("proguard-rules.pro"))
-            }
+    }
 
-            macOS {
-                iconFile.set(project.file("appIcons/MacosIcon.icns"))
-                bundleID = "com.github.terrakok.machoviewer"
-                infoPlist {
-                    extraKeysRawXml = """
-                        <key>CFBundleDocumentTypes</key>
-                        <array>
-                            <dict>
-                                <key>CFBundleTypeName</key>
-                                <string>All Files</string>
-                                <key>CFBundleTypeRole</key>
-                                <string>Viewer</string>
-                                <key>LSItemContentTypes</key>
-                                <array>
-                                    <string>public.data</string>
-                                    <string>public.content</string>
-                                </array>
-                            </dict>
-                        </array>
-                """.trimIndent()
-                }
-            }
+    nativeDistributions {
+        targetFormats(TargetFormat.Dmg, TargetFormat.Zip)
+        packageName = "Mach-O viewer"
+        packageVersion = project.findProperty("appVersion")?.toString() ?: "1.0.0"
+        compressionLevel = CompressionLevel.Maximum
+        buildTypes.release.proguard {
+            configurationFiles.from(project.file("proguard-rules.pro"))
+        }
+
+        fileAssociation(
+            mimeType = "application/x-mach-binary",
+            extension = "dylib",
+            description = "Dynamic Library",
+        )
+        fileAssociation(
+            mimeType = "application/x-object",
+            extension = "o",
+            description = "Object File",
+        )
+        fileAssociation(
+            mimeType = "application/x-archive",
+            extension = "a",
+            description = "Static Library",
+        )
+        fileAssociation(
+            mimeType = "application/x-mach-bundle",
+            extension = "bundle",
+            description = "macOS Bundle",
+        )
+
+        macOS {
+            iconFile.set(project.file("appIcons/MacosIcon.icns"))
+            bundleID = "com.github.terrakok.machoviewer"
         }
     }
 }

@@ -43,6 +43,11 @@ dependencies {
     }
 }
 
+// Required for Compose Hot Reload (hotRun task reads from this block)
+compose.desktop.application {
+    mainClass = "MainKt"
+}
+
 nucleus.application {
     mainClass = "MainKt"
 

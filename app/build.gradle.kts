@@ -33,6 +33,7 @@ dependencies {
     implementation(libs.nucleus.updater.runtime)
     implementation(libs.nucleus.native.ssl)
     implementation(libs.nucleus.native.http)
+    implementation(libs.nucleus.taskbar.progress)
     implementation(compose.desktop.currentOs) {
         exclude(group = "org.jetbrains.compose.material")
     }

@@ -14,6 +14,7 @@ import io.github.kdroidfilter.nucleus.darkmodedetector.isSystemInDarkMode
 import io.github.kdroidfilter.nucleus.graalvm.GraalVmInitializer
 import io.github.kdroidfilter.nucleus.nativehttp.NativeHttpClient
 import io.github.kdroidfilter.nucleus.systemcolor.systemAccentColor
+import io.github.kdroidfilter.nucleus.taskbarprogress.TaskbarProgress
 import io.github.kdroidfilter.nucleus.updater.NucleusUpdater
 import io.github.kdroidfilter.nucleus.updater.UpdateResult
 import io.github.kdroidfilter.nucleus.updater.provider.GitHubProvider
@@ -52,15 +53,18 @@ fun main(args: Array<String>) {
     application {
         val scope = rememberCoroutineScope()
         var pendingInstaller by remember { mutableStateOf<File?>(null) }
+        var downloadProgress by remember { mutableStateOf<Double?>(null) }
 
         // Silent background update check
-       LaunchedEffect(Unit) {
+        LaunchedEffect(Unit) {
             if (!updater.isUpdateSupported()) return@LaunchedEffect
             val result = updater.checkForUpdates()
             if (result is UpdateResult.Available) {
                 updater.downloadUpdate(result.info).collect { progress ->
+                    downloadProgress = progress.percent / 100.0
                     if (progress.file != null) {
                         pendingInstaller = progress.file
+                        downloadProgress = null
                     }
                 }
             }
@@ -99,6 +103,16 @@ fun main(args: Array<String>) {
                 },
             ) {
                 window.minimumSize = Dimension(1300, 900)
+
+                LaunchedEffect(downloadProgress) {
+                    val progress = downloadProgress
+                    if (progress != null) {
+                        TaskbarProgress.showProgress(window, progress)
+                    } else {
+                        TaskbarProgress.hideProgress(window)
+                    }
+                }
+
                 App()
             }
         }

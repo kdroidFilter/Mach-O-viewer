@@ -33,6 +33,10 @@ compose.desktop {
             packageName = "Mach-O viewer"
             packageVersion = project.findProperty("appVersion")?.toString() ?: "1.0.0"
 
+            buildTypes.release.proguard {
+                configurationFiles.from(project.file("proguard-rules.pro"))
+            }
+
             macOS {
                 iconFile.set(project.file("appIcons/MacosIcon.icns"))
                 bundleID = "com.github.terrakok.machoviewer"

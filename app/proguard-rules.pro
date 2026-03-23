@@ -8,7 +8,6 @@
 # Keep JNA classes
 -keep class com.sun.jna.** { *; }
 -keepclassmembers class * extends com.sun.jna.Structure { *; }
--keep class com.sun.jna.platform.** { *; }
 
 # Keep Jewel and its JetBrains dependencies
 -keep class org.jetbrains.jewel.** { *; }

@@ -12,11 +12,13 @@ pluginManagement {
         }
         gradlePluginPortal()
         mavenCentral()
+        mavenLocal()
     }
 }
 
 dependencyResolutionManagement {
     repositories {
+        maven("https://packages.jetbrains.team/maven/p/kpm/public/")
         google {
             content {
               	includeGroupByRegex("com\\.android.*")
@@ -26,6 +28,8 @@ dependencyResolutionManagement {
             }
         }
         mavenCentral()
+        mavenLocal()
+        maven("https://www.jetbrains.com/intellij-repository/snapshots")
     }
 }
 include(":app")

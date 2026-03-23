@@ -9,12 +9,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import io.github.kdroidfilter.nucleus.window.DecoratedWindowScope
+import io.github.kdroidfilter.nucleus.window.jewel.JewelTitleBar
+import io.github.kdroidfilter.nucleus.window.macOSLargeCornerRadius
+import io.github.kdroidfilter.nucleus.window.newFullscreenControls
 import org.jetbrains.jewel.foundation.theme.JewelTheme
 import org.jetbrains.jewel.ui.component.Icon
 import org.jetbrains.jewel.ui.component.IconButton
 import org.jetbrains.jewel.ui.component.Text
-import org.jetbrains.jewel.window.DecoratedWindowScope
-import org.jetbrains.jewel.window.TitleBar
 
 @Composable
 fun DecoratedWindowScope.App() {
@@ -38,7 +40,7 @@ fun DecoratedWindowScope.App() {
     }
 
     Column(modifier = Modifier.fillMaxSize().background(JewelTheme.globalColors.panelBackground)) {
-        TitleBar {
+        JewelTitleBar(modifier = Modifier.macOSLargeCornerRadius().newFullscreenControls()) {
             Row(
                 modifier = Modifier.fillMaxSize(),
                 verticalAlignment = Alignment.CenterVertically,

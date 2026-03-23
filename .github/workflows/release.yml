@@ -6,43 +6,9 @@ on:
   workflow_dispatch:
 
 jobs:
-  release-jvm:
-    name: Release JVM (DMG)
-    runs-on: macos-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Nucleus
-        uses: kdroidFilter/Nucleus/.github/actions/setup-nucleus@v1.6.4
-        with:
-          setup-gradle: 'true'
-
-      - name: Build JVM distribution
-        run: |
-          VERSION=${GITHUB_REF_NAME#v}
-          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+ ]]; then
-            VERSION="1.0.0"
-          fi
-          ./gradlew :app:packageReleaseDistributionForCurrentOS -PappVersion=$VERSION
-
-      - name: Upload JVM DMG
-        uses: actions/upload-artifact@v4
-        with:
-          name: jvm-dmg
-          path: app/build/compose/binaries/main-release/dmg/*.dmg
-
-      - name: Upload JVM ZIP
-        uses: actions/upload-artifact@v4
-        with:
-          name: jvm-zip
-          path: app/build/compose/binaries/main-release/zip/*.zip
-
   release-graalvm:
-    name: Release GraalVM (DMG)
-    runs-on: macos-latest
+    name: Release GraalVM
+    runs-on: macos-26
     permissions:
       contents: write
     steps:
@@ -56,45 +22,18 @@ jobs:
           setup-gradle: 'true'
           setup-node: 'true'
 
-      - name: Build GraalVM native image
+      - name: Build GraalVM native packages
         run: |
           VERSION=${GITHUB_REF_NAME#v}
           if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+ ]]; then
             VERSION="1.0.0"
           fi
-          ./gradlew :app:packageGraalvmDmg -PappVersion=$VERSION -PnativeMarch=compatibility --no-daemon
-
-      - name: Upload GraalVM artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: graalvm-dmg
-          path: app/build/compose/binaries/**/graalvm-dmg/*.dmg
-
-  publish:
-    name: Publish Release
-    needs: [release-jvm, release-graalvm]
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
-    permissions:
-      contents: write
-    steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-
-      - name: Rename GraalVM DMG
-        run: |
-          for f in artifacts/graalvm-dmg/*.dmg; do
-            dir=$(dirname "$f")
-            base=$(basename "$f" .dmg)
-            mv "$f" "$dir/${base}-graalvm.dmg"
-          done
+          ./gradlew :app:packageGraalvmDmg :app:packageGraalvmZip -PappVersion=$VERSION -PnativeMarch=compatibility --no-daemon
 
       - name: Release
+        if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            artifacts/jvm-dmg/*.dmg
-            artifacts/jvm-zip/*.zip
-            artifacts/graalvm-dmg/*.dmg
+            app/build/compose/binaries/**/graalvm-dmg/*.dmg
+            app/build/compose/binaries/**/graalvm-zip/*.zip

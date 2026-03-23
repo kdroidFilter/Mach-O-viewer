@@ -141,28 +141,8 @@ fi
 success "Architecture: ${BOLD}${arch_label}${RESET}"
 echo ""
 
-# Choose variant
-echo -e "  ${ARROW} ${BOLD}Choose a variant:${RESET}"
-echo -e "    ${WHITE}1)${RESET} JVM ${DIM}(requires Java, larger bundle)${RESET}"
-echo -e "    ${WHITE}2)${RESET} GraalVM Native ${DIM}(standalone, faster startup)${RESET}"
-echo ""
-printf "  ${ARROW} ${BOLD}Enter choice [1/2]:${RESET} "
-read -r choice
-
-case "$choice" in
-  2)
-    zip_name="${app_name}-${version_number}-graalvm.zip"
-    variant_label="GraalVM Native"
-    ;;
-  *)
-    zip_name="${app_name}-${version_number}.zip"
-    variant_label="JVM"
-    ;;
-esac
-
+zip_name="${app_name}-${version_number}.zip"
 zip_url="https://github.com/${repo}/releases/download/${version}/${zip_name}"
-success "Variant: ${BOLD}${variant_label}${RESET}"
-echo ""
 
 # Temp directory
 tmpdir="$(mktemp -d -t macho-viewer-install)"
@@ -176,7 +156,7 @@ cleanup() {
 trap cleanup EXIT
 
 # Download
-step "Downloading ${YELLOW}${app_name}${RESET} ${DIM}(${version_number} - ${variant_label})${RESET} ..."
+step "Downloading ${YELLOW}${app_name}${RESET} ${DIM}(${version_number})${RESET} ..."
 download_with_progress "$zip_url" "$tmpfile"
 success "Download complete"
 echo ""

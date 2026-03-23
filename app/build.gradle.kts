@@ -28,7 +28,9 @@ dependencies {
     implementation(libs.nucleus.decorated.window.jewel)
     implementation(libs.nucleus.decorated.window.jni)
     implementation(libs.jna)
+    implementation(libs.nucleus.core.runtime)
     implementation(libs.nucleus.darkmode.detector)
+    implementation(libs.nucleus.system.color)
     implementation(libs.nucleus.graalvm.runtime)
     implementation(compose.desktop.currentOs) {
         exclude(group = "org.jetbrains.compose.material")
@@ -60,6 +62,7 @@ nucleus.application {
         buildTypes.release.proguard {
             configurationFiles.from(project.file("proguard-rules.pro"))
         }
+        cleanupNativeLibs = true
 
         fileAssociation(
             mimeType = "application/x-mach-binary",

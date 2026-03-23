@@ -1,40 +1,53 @@
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import com.github.terrakok.App
 import com.github.terrakok.FileInbox
-import io.github.kdroidfilter.nucleus.core.runtime.DeepLinkHandler
 import io.github.kdroidfilter.nucleus.darkmodedetector.isSystemInDarkMode
 import io.github.kdroidfilter.nucleus.graalvm.GraalVmInitializer
+import io.github.kdroidfilter.nucleus.systemcolor.systemAccentColor
 import io.github.kdroidfilter.nucleus.window.jewel.JewelDecoratedWindow
+import org.jetbrains.jewel.foundation.BorderColors
+import org.jetbrains.jewel.foundation.GlobalColors
+import org.jetbrains.jewel.foundation.OutlineColors
 import org.jetbrains.jewel.foundation.theme.JewelTheme
 import org.jetbrains.jewel.intui.standalone.theme.IntUiTheme
+import org.jetbrains.jewel.intui.standalone.theme.dark
 import org.jetbrains.jewel.intui.standalone.theme.darkThemeDefinition
 import org.jetbrains.jewel.intui.standalone.theme.default
+import org.jetbrains.jewel.intui.standalone.theme.light
 import org.jetbrains.jewel.intui.standalone.theme.lightThemeDefinition
 import org.jetbrains.jewel.ui.ComponentStyling
+import java.awt.Desktop
 import java.awt.Dimension
+
 fun main(args: Array<String>) {
     GraalVmInitializer.initialize()
-
-    DeepLinkHandler.register(args) { uri ->
-        val path = uri.path ?: uri.toString()
-        FileInbox.send(path)
+    args.firstOrNull()?.let { FileInbox.send(it) }
+    if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.APP_OPEN_FILE)) {
+        Desktop.getDesktop().setOpenFileHandler { event ->
+            event.files.firstOrNull()?.let { file ->
+                FileInbox.send(file.absolutePath)
+            }
+        }
     }
-
-    // Handle file passed as initial argument
-    val initialUri = DeepLinkHandler.uri
-    if (initialUri != null) {
-        val path = initialUri.path ?: initialUri.toString()
-        FileInbox.send(path)
-    } else {
-        args.firstOrNull()?.let { FileInbox.send(it) }
-    }
-
     application {
         val systemIsDark = isSystemInDarkMode()
-        val theme = if (systemIsDark) JewelTheme.darkThemeDefinition()
-        else JewelTheme.lightThemeDefinition()
+        val accent = systemAccentColor()
+        val theme = if (systemIsDark) {
+            if (accent != null) {
+                JewelTheme.darkThemeDefinition(colors = accentGlobalColors(accent, isDark = true))
+            } else {
+                JewelTheme.darkThemeDefinition()
+            }
+        } else {
+            if (accent != null) {
+                JewelTheme.lightThemeDefinition(colors = accentGlobalColors(accent, isDark = false))
+            } else {
+                JewelTheme.lightThemeDefinition()
+            }
+        }
         IntUiTheme(
             theme = theme,
             styling = ComponentStyling.default(),
@@ -51,3 +64,16 @@ fun main(args: Array<String>) {
         }
     }
 }
+
+private fun accentGlobalColors(accent: Color, isDark: Boolean): GlobalColors =
+    if (isDark) {
+        GlobalColors.dark(
+            borders = BorderColors.dark(focused = accent),
+            outlines = OutlineColors.dark(focused = accent),
+        )
+    } else {
+        GlobalColors.light(
+            borders = BorderColors.light(focused = accent),
+            outlines = OutlineColors.light(focused = accent),
+        )
+    }

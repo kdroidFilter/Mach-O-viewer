@@ -11,6 +11,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.kdroidfilter.nucleus.window.DecoratedWindowScope
 import io.github.kdroidfilter.nucleus.window.jewel.JewelTitleBar
+import io.github.kdroidfilter.nucleus.window.macOSLargeCornerRadius
+import io.github.kdroidfilter.nucleus.window.newFullscreenControls
 import org.jetbrains.jewel.foundation.theme.JewelTheme
 import org.jetbrains.jewel.ui.component.Icon
 import org.jetbrains.jewel.ui.component.IconButton
@@ -38,7 +40,7 @@ fun DecoratedWindowScope.App() {
     }
 
     Column(modifier = Modifier.fillMaxSize().background(JewelTheme.globalColors.panelBackground)) {
-        JewelTitleBar {
+        JewelTitleBar(modifier = Modifier.macOSLargeCornerRadius().newFullscreenControls()) {
             Row(
                 modifier = Modifier.fillMaxSize(),
                 verticalAlignment = Alignment.CenterVertically,

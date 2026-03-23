@@ -56,7 +56,7 @@ fun NotificationItem(
         modifier = Modifier
             .widthIn(max = 600.dp)
             .clip(RoundedCornerShape(8.dp))
-            .background(JewelTheme.globalColors.paneBackground)
+            .background(JewelTheme.globalColors.panelBackground)
             .border(1.dp, Color.Gray.copy(alpha = 0.3f), RoundedCornerShape(8.dp))
             .padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,

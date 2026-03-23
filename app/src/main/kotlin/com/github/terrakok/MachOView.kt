@@ -51,7 +51,7 @@ fun MachOView(machOFile: MachOFile) {
             modifier = Modifier
                 .width(300.dp)
                 .fillMaxHeight()
-                .background(JewelTheme.globalColors.paneBackground)
+                .background(JewelTheme.globalColors.panelBackground)
         ) {
             Tree(
                 machOFile = machOFile,
@@ -69,14 +69,17 @@ fun MachOView(machOFile: MachOFile) {
                 selectedItem = item
             }
         }
-        Divider(orientation = Orientation.Vertical)
+        Divider(
+            orientation = Orientation.Vertical,
+            modifier = Modifier.fillMaxHeight()
+        )
 
         // Main content
         Column(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxHeight()
-                .background(JewelTheme.globalColors.paneBackground)
+                .background(JewelTheme.globalColors.panelBackground)
         ) {
             Box(modifier = Modifier.weight(1f)) {
                 Column(modifier = Modifier.fillMaxSize()) {
@@ -88,7 +91,10 @@ fun MachOView(machOFile: MachOFile) {
                 }
             }
 
-            Divider(orientation = Orientation.Horizontal)
+            Divider(
+                orientation = Orientation.Horizontal,
+                modifier = Modifier.fillMaxWidth()
+            )
 
             Box(modifier = Modifier.weight(1f)) {
                 HexViewer(machOFile.content, highlightedOffset, highlightedSize)
@@ -115,13 +121,16 @@ fun HexViewer(content: ByteArray, highlightedOffset: Long?, highlightedSize: Lon
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(8.dp)
         )
-        Divider(orientation = Orientation.Horizontal)
+        Divider(
+            orientation = Orientation.Horizontal,
+            modifier = Modifier.fillMaxWidth()           
+        )
         Box(modifier = Modifier.fillMaxSize()) {
             LazyColumn(
                 state = scrollState,
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(JewelTheme.globalColors.paneBackground)
+                    .background(JewelTheme.globalColors.panelBackground)
             ) {
                 val lineCount = (content.size + bytesPerLine - 1) / bytesPerLine
                 items(lineCount) { lineIndex ->
@@ -442,7 +451,7 @@ fun TableContent(
                 val isClickable = row.destination != null
 
                 val baseBackgroundColor =
-                    if (index % 2 == 0) Color.Transparent else JewelTheme.globalColors.paneBackground.copy(alpha = 0.5f)
+                    if (index % 2 == 0) Color.Transparent else JewelTheme.globalColors.panelBackground.copy(alpha = 0.5f)
                 val backgroundColor = if (isHovered && isClickable) {
                     JewelTheme.globalColors.outlines.focused.copy(alpha = 0.1f)
                 } else {

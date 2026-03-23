@@ -8,10 +8,24 @@
 # Keep JNA classes
 -keep class com.sun.jna.** { *; }
 -keepclassmembers class * extends com.sun.jna.Structure { *; }
+-keep class com.sun.jna.platform.** { *; }
 
 # Keep Jewel and its JetBrains dependencies
 -keep class org.jetbrains.jewel.** { *; }
 -keep class com.jetbrains.** { *; }
+
+# Keep JewelLogger's dynamically referenced classes (optional, since they are searched at runtime)
+-dontwarn com.intellij.openapi.diagnostic.Logger
+-dontwarn org.slf4j.LoggerFactory
+-dontwarn org.slf4j.Logger
+
+# Keep AWT methods accessed via reflection in JNA Platform WindowUtils
+-keepclassmembers class java.awt.Component {
+    public * getPeer();
+}
+-keepclassmembers class java.awt.Window {
+    public void setAlpha(float);
+}
 
 # Keep fields used by reflection in PlatformUtils.kt
 -keepclassmembers class androidx.compose.ui.draganddrop.DragAndDropEvent {

@@ -37,7 +37,7 @@ fun DecoratedWindowScope.App() {
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize().background(JewelTheme.globalColors.paneBackground)) {
+    Column(modifier = Modifier.fillMaxSize().background(JewelTheme.globalColors.panelBackground)) {
         TitleBar {
             Row(
                 modifier = Modifier.fillMaxSize(),

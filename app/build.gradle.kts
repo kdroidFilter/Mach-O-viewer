@@ -19,6 +19,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.swing)
     implementation(libs.jewelStandalone)
     implementation(libs.jewelWindow)
+    implementation(libs.jnaPlatform)
     implementation(compose.desktop.currentOs) {
         exclude(group = "org.jetbrains.compose.material")
     }

@@ -17,7 +17,6 @@ pluginManagement {
 
 dependencyResolutionManagement {
     repositories {
-        maven("https://packages.jetbrains.team/maven/p/kpm/public/")
         google {
             content {
               	includeGroupByRegex("com\\.android.*")

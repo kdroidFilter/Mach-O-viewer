@@ -141,7 +141,7 @@ fi
 success "Architecture: ${BOLD}${arch_label}${RESET}"
 echo ""
 
-zip_name="${app_name}-${version_number}.zip"
+zip_name="mach-o-viewer-${version_number}-mac-arm64.zip"
 zip_url="https://github.com/${repo}/releases/download/${version}/${zip_name}"
 
 # Temp directory

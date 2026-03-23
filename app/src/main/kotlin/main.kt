@@ -1,3 +1,9 @@
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.application
@@ -6,8 +12,13 @@ import com.github.terrakok.App
 import com.github.terrakok.FileInbox
 import io.github.kdroidfilter.nucleus.darkmodedetector.isSystemInDarkMode
 import io.github.kdroidfilter.nucleus.graalvm.GraalVmInitializer
+import io.github.kdroidfilter.nucleus.nativehttp.NativeHttpClient
 import io.github.kdroidfilter.nucleus.systemcolor.systemAccentColor
+import io.github.kdroidfilter.nucleus.updater.NucleusUpdater
+import io.github.kdroidfilter.nucleus.updater.UpdateResult
+import io.github.kdroidfilter.nucleus.updater.provider.GitHubProvider
 import io.github.kdroidfilter.nucleus.window.jewel.JewelDecoratedWindow
+import kotlinx.coroutines.launch
 import org.jetbrains.jewel.foundation.BorderColors
 import org.jetbrains.jewel.foundation.GlobalColors
 import org.jetbrains.jewel.foundation.OutlineColors
@@ -21,6 +32,12 @@ import org.jetbrains.jewel.intui.standalone.theme.lightThemeDefinition
 import org.jetbrains.jewel.ui.ComponentStyling
 import java.awt.Desktop
 import java.awt.Dimension
+import java.io.File
+
+private val updater = NucleusUpdater {
+    provider = GitHubProvider(owner = "kdroidFilter", repo = "Mach-O-viewer")
+    httpClient = NativeHttpClient.create()
+}
 
 fun main(args: Array<String>) {
     GraalVmInitializer.initialize()
@@ -33,6 +50,22 @@ fun main(args: Array<String>) {
         }
     }
     application {
+        val scope = rememberCoroutineScope()
+        var pendingInstaller by remember { mutableStateOf<File?>(null) }
+
+        // Silent background update check
+       LaunchedEffect(Unit) {
+            if (!updater.isUpdateSupported()) return@LaunchedEffect
+            val result = updater.checkForUpdates()
+            if (result is UpdateResult.Available) {
+                updater.downloadUpdate(result.info).collect { progress ->
+                    if (progress.file != null) {
+                        pendingInstaller = progress.file
+                    }
+                }
+            }
+        }
+
         val systemIsDark = isSystemInDarkMode()
         val accent = systemAccentColor()
         val theme = if (systemIsDark) {
@@ -56,7 +89,14 @@ fun main(args: Array<String>) {
             JewelDecoratedWindow(
                 title = "Mach-O viewer",
                 state = windowState,
-                onCloseRequest = ::exitApplication,
+                onCloseRequest = {
+                    val installer = pendingInstaller
+                    if (installer != null) {
+                        scope.launch { updater.installAndQuit(installer) }
+                    } else {
+                        exitApplication()
+                    }
+                },
             ) {
                 window.minimumSize = Dimension(1300, 900)
                 App()

@@ -1,4 +1,7 @@
 import io.github.kdroidfilter.nucleus.desktop.application.dsl.CompressionLevel
+import io.github.kdroidfilter.nucleus.desktop.application.dsl.PublishMode
+import io.github.kdroidfilter.nucleus.desktop.application.dsl.ReleaseChannel
+import io.github.kdroidfilter.nucleus.desktop.application.dsl.ReleaseType
 import io.github.kdroidfilter.nucleus.desktop.application.dsl.TargetFormat
 
 plugins {
@@ -32,6 +35,9 @@ dependencies {
     implementation(libs.nucleus.darkmode.detector)
     implementation(libs.nucleus.system.color)
     implementation(libs.nucleus.graalvm.runtime)
+    implementation(libs.nucleus.updater.runtime)
+    implementation(libs.nucleus.native.ssl)
+    implementation(libs.nucleus.native.http)
     implementation(compose.desktop.currentOs) {
         exclude(group = "org.jetbrains.compose.material")
     }
@@ -84,6 +90,18 @@ nucleus.application {
             extension = "bundle",
             description = "macOS Bundle",
         )
+
+        publish {
+            publishMode = PublishMode.Auto
+            github {
+                enabled = true
+                owner = "kdroidFilter"
+                repo = "Mach-O-viewer"
+                token = System.getenv("GITHUB_TOKEN")
+                channel = ReleaseChannel.Latest
+                releaseType = ReleaseType.Release
+            }
+        }
 
         macOS {
             iconFile.set(project.file("appIcons/MacosIcon.icns"))

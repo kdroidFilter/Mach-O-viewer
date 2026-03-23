@@ -90,6 +90,11 @@ nucleus.application {
             extension = "bundle",
             description = "macOS Bundle",
         )
+        fileAssociation(
+            mimeType = "application/x-mach-binary",
+            extension = "kexe",
+            description = "Kotlin/Native Executable",
+        )
 
         publish {
             publishMode = PublishMode.Auto
@@ -106,6 +111,24 @@ nucleus.application {
         macOS {
             iconFile.set(project.file("appIcons/MacosIcon.icns"))
             bundleID = "com.github.terrakok.machoviewer"
+            infoPlist {
+                extraKeysRawXml = """
+                    <key>CFBundleDocumentTypes</key>
+                    <array>
+                        <dict>
+                            <key>CFBundleTypeName</key>
+                            <string>All Files</string>
+                            <key>CFBundleTypeRole</key>
+                            <string>Viewer</string>
+                            <key>LSItemContentTypes</key>
+                            <array>
+                                <string>public.data</string>
+                                <string>public.content</string>
+                            </array>
+                        </dict>
+                    </array>
+                """.trimIndent()
+            }
         }
     }
 }
